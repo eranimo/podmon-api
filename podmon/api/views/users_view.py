@@ -6,10 +6,9 @@ from rest_framework.decorators import detail_route, list_route
 from podmon.api.serializers import (
     DetailedUserSerializer,
     UpdateUserSerializer,
-    RecipeListSerializer,
-    RecipeSerializer
+    ReferenceAccountSerializer
 )
-from ..models import RecipeList, Recipe
+from ..models import Account
 
 
 class UsersView(viewsets.GenericViewSet):
@@ -21,18 +20,27 @@ class UsersView(viewsets.GenericViewSet):
 
 
     def retrieve(self, request, pk):
-        """ Get a User's information """
+        """
+        Get a User's information
+        ---
+        serializer: DetailedUserSerializer
+        """
         user = self.get_object()
         user_serializer = self.get_serializer(user)
         return Response(user_serializer.data)
 
 
     def update(self, request, pk):
-        """ Get a User's information """
+        """
+        Update a User's information
+        ---
+        request_serializer: UpdateUserSerializer
+        response_serializer: DetailedUserSerializer
+        """
         serializer = UpdateUserSerializer(data=request.data)
         if serializer.is_valid():
             user = self.get_object()
-            user.username = serializer.data.get('username')
+            user.email = serializer.data.get('email')
             user.save()
             user_serializer = self.get_serializer(user)
             return Response(user_serializer.data)
@@ -40,7 +48,11 @@ class UsersView(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request):
-        """ List all Users """
+        """
+        List all Users
+        ---
+        serializer: DetailedUserSerializer
+        """
         users = User.objects.all()
 
         page = self.paginate_queryset(users)
@@ -52,27 +64,18 @@ class UsersView(viewsets.GenericViewSet):
         return Response(serializer.data)
 
     @detail_route()
-    def recipe_lists(self, request, pk=None):
-        """ Returns a User's saved Recipe lists """
+    def accounts(self, request, pk=None):
+        """
+        Returns a User's accounts
+        ---
+        serializer: ReferenceAccountSerializer
+        """
         owner = self.get_object()
-        recipe_lists = RecipeList.objects.filter(owner=owner)
-
+        accounts = Account.objects.filter(owner=owner)
+        print(accounts)
         context = {
             'request': request
         }
 
-        recipe_list_serializer = RecipeListSerializer(recipe_lists, many=True, context=context)
-        return Response(recipe_list_serializer.data)
-
-    @detail_route()
-    def owned_recipes(self, request, pk=None):
-        """ Returns a User's Posted Recipes """
-        owner = self.get_object()
-        recipe_lists = Recipe.objects.filter(poster=owner)
-
-        context = {
-            'request': request
-        }
-
-        recipe_serializer = RecipeSerializer(recipe_lists, many=True, context=context)
-        return Response(recipe_serializer.data)
+        accounts_serializer = ReferenceAccountSerializer(accounts, many=True, context=context)
+        return Response(accounts_serializer.data)

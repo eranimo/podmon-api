@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User, Group
-from .models import Recipe, RecipeList, RecipeListMember, Tag
+from .models import Account
 from rest_framework import serializers
 
 
@@ -21,52 +21,19 @@ class DetailedUserSerializer(ReferenceUserSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email')
-        
+        fields = ('email',)
+
 class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'password')
 
-
-
-
-class TagSerializer(serializers.ModelSerializer):
+class ReferenceAccountSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tag
-        fields = ('id', 'name')
+        model = Account
+        fields = ('pk', 'name', 'key_id', 'v_code')
 
-class TagDetailsSerializer(serializers.ModelSerializer):
+class UpdateAccountSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tag
-        fields = ('id', 'name', 'description')
-
-
-
-class RecipeSerializer(serializers.ModelSerializer):
-    poster = ReferenceUserSerializer(many=False)
-    tags = TagSerializer(many=True)
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'title', 'poster', 'description', 'tags', 'instructions',)
-
-
-class RecipeListMemberSerializer(serializers.ModelSerializer):
-    recipe = RecipeSerializer(many=False)
-    class Meta:
-        model = RecipeListMember
-        fields = ('id', 'date_added', 'note', 'recipe')
-
-class RecipeListSerializer(serializers.ModelSerializer):
-    members = RecipeListMemberSerializer(many=True)
-    class Meta:
-        model = RecipeList
-        fields = ('id', 'title', 'description', 'description', 'members')
-
-    def create(self, validated_data):
-        members_data = validated_data.pop('members')
-        recipe_list = RecipeList.create(**validated_data)
-        for member_data in members_data:
-            RecipeListMember.create(recipe_list=recipe_list, **member_data)
-        return recipe_list
+        model = Account
+        fields = ('name', 'key_id', 'v_code')

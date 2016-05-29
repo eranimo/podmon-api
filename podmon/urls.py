@@ -17,25 +17,25 @@ Including another URLconf
 
 from django.conf.urls import url, include
 from rest_framework import routers
-from podmon.api.views import UserView, UsersView, RecipeView, RecipeListView, TagView, RegisterView
+from podmon.api.views import UserView, UsersView, RegisterView, AccountView
+from podmon.api.views.character_view import character_urls
 from django.contrib import admin
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
+from rest_framework_extensions.routers import ExtendedSimpleRouter
 
-router = routers.DefaultRouter()
-router.register(r'user', UserView, base_name='user')
-router.register(r'users', UsersView)
-router.register(r'recipes', RecipeView)
-router.register(r'recipe-list', RecipeListView)
-router.register(r'tags', TagView)
+base_router = routers.DefaultRouter()
+base_router.register(r'user', UserView, base_name='user')
+base_router.register(r'users', UsersView, base_name='users')
+base_router.register(r'account', AccountView, base_name='account')
 
-# Wire up our API using automatic URL routing.
-# Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    url(r'^', include(router.urls)),
+    url(r'^', include(base_router.urls)),
+    url(r'^account/(?P<account_id>[a-z0-9]+)/character/(?P<char_id>[a-z0-9]+)/', include(character_urls)),
     url(r'^admin/', admin.site.urls),
     url(r'^register/', RegisterView),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^docs/', include('rest_framework_swagger.urls')),
-    url(r'^token/fetch', 'rest_framework_jwt.views.obtain_jwt_token'),
-    url(r'^token/refresh', 'rest_framework_jwt.views.refresh_jwt_token'),
-    url(r'^token/verify', 'rest_framework_jwt.views.verify_jwt_token')
+    url(r'^token/fetch', obtain_jwt_token),
+    url(r'^token/refresh', refresh_jwt_token),
+    url(r'^token/verify', verify_jwt_token)
 ]

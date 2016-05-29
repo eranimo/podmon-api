@@ -37,6 +37,7 @@ class UserView(viewsets.ViewSet):
             """
             html_message = """
             Thank you creating an account on PantryIndex.com. To verify your email address,
+            <a href="http://www.pantryindex.com/verify">Click here</a>
             """
             send_mail('PantryIndex Email Verification',
                       message.strip(),
